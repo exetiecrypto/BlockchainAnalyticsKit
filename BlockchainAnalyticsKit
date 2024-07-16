@@ -1,0 +1,50 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract BlockchainAnalyticsKit {
+    struct Transaction {
+        uint256 blockNumber;
+        uint256 timestamp;
+        address sender;
+        address recipient;
+        uint256 amount;
+    }
+
+    mapping(bytes32 => Transaction) private transactions;
+    uint256 public transactionCount;
+
+    // Events
+    event TransactionRecorded(bytes32 indexed txHash, address indexed sender, address indexed recipient, uint256 amount);
+
+    // Record a new transaction
+    function recordTransaction(
+        bytes32 txHash,
+        uint256 blockNumber,
+        uint256 timestamp,
+        address sender,
+        address recipient,
+        uint256 amount
+    ) external {
+        require(transactions[txHash].blockNumber == 0, "Transaction already recorded");
+
+        transactions[txHash] = Transaction({
+            blockNumber: blockNumber,
+            timestamp: timestamp,
+            sender: sender,
+            recipient: recipient,
+            amount: amount
+        });
+
+        transactionCount++;
+
+        emit TransactionRecorded(txHash, sender, recipient, amount);
+    }
+
+    // Get transaction details by transaction hash
+    function getTransaction(bytes32 txHash) external view returns (uint256 blockNumber, uint256 timestamp, address sender, address recipient, uint256 amount) {
+        require(transactions[txHash].blockNumber != 0, "Transaction not found");
+
+        Transaction storage transaction = transactions[txHash];
+        return (transaction.blockNumber, transaction.timestamp, transaction.sender, transaction.recipient, transaction.amount);
+    }
+}
